@@ -69,3 +69,31 @@
 @media print{
   .doc.portrait.leaveOfficial.onePageLeave{width:210mm!important;height:297mm!important;min-height:297mm!important;max-height:297mm!important;box-shadow:none!important;margin:0!important;page-break-after:avoid;page-break-inside:avoid;overflow:hidden!important;}
 }
+
+
+/* v8.7 leave declaration: compact bottom signatures, one-page PDF/image output */
+.onePageLeave{min-height:1123px;max-height:1123px;overflow:hidden;padding:44px 54px 30px!important;position:relative;}
+.onePageLeave .leaveHeader{margin-bottom:48px!important;}
+.onePageLeave .orgTitle{font-size:24px!important;margin-bottom:34px!important;}
+.onePageLeave .leaveTitle{font-size:23px!important;}
+.onePageLeave .newLeaveBody{font-size:19px!important;line-height:1.75!important;margin-top:0!important;}
+.onePageLeave .paraLine{margin:0 0 8px!important;}
+.onePageLeave .fieldBlock{margin-top:58px!important;}
+.onePageLeave .fieldLine{margin:18px 0!important;}
+.onePageLeave .fieldLabel{display:inline-block;width:105px;font-weight:700;}
+.onePageLeave .genRed{color:#c40000;font-weight:700;}
+.onePageLeave .redLine{display:inline-block;color:#c40000;font-weight:700;border-bottom:1.4px solid #c40000;text-align:center;min-height:26px;line-height:26px;padding:0 10px;white-space:nowrap;overflow:visible;}
+.onePageLeave .applicantRed{min-width:150px;}
+.onePageLeave .hostRed{min-width:300px;}
+.onePageLeave .timeRed{min-width:230px;}
+.onePageLeave .activityRed{min-width:250px;}
+.signaturePanelBottom{position:absolute;left:54px;right:54px;bottom:128px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;font-size:14px;}
+.bottomSignCard{border:1px solid #d0d0d0;border-radius:0;padding:10px 12px;background:#fff;min-height:112px;page-break-inside:avoid;}
+.bottomSignTitle{font-weight:700;text-align:center;margin-bottom:8px;font-size:15px;}
+.bottomSignRow{display:grid;grid-template-columns:76px 1fr;align-items:end;gap:4px;margin:5px 0;min-height:22px;}
+.bottomSignRow span{white-space:nowrap;}
+.bottomSignLine{border-bottom:1px solid #111;min-height:21px;line-height:21px;overflow:hidden;}
+.bottomSignImage{height:28px;display:flex;align-items:flex-end;}
+.bottomSignImage img{max-width:100%;max-height:28px;object-fit:contain;display:block;}
+.onePageLeave .leaveFooter{bottom:30px!important;left:54px!important;right:54px!important;font-size:14px!important;}
+@media print{.onePageLeave{height:1123px!important;max-height:1123px!important;overflow:hidden!important}.signaturePanelBottom{bottom:126px!important}}

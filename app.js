@@ -201,10 +201,11 @@ function genLine(text, cls='', fallback=''){
 function signatureRows(id,title){
   let l=state.leave;
   let sig=l.sigs[id]?`<img src="${l.sigs[id]}" alt="${title}簽署">`:'';
-  return `<div class="signGroup">
-    <div class="signRow"><span>${title}簽署</span><b>：</b><div class="signLine signImage">${sig}</div></div>
-    <div class="signRow"><span>${title}姓名</span><b>：</b><div class="signLine">${esc(l[id+'Name']||'')}</div></div>
-    <div class="signRow"><span>日期</span><b>：</b><div class="signLine">${esc(l[id+'Date']||'')}</div></div>
+  return `<div class="bottomSignCard">
+    <div class="bottomSignTitle">${title}</div>
+    <div class="bottomSignRow"><span>${title}簽署：</span><div class="bottomSignLine bottomSignImage">${sig}</div></div>
+    <div class="bottomSignRow"><span>${title}姓名：</span><div class="bottomSignLine">${esc(l[id+'Name']||'')}</div></div>
+    <div class="bottomSignRow"><span>日期：</span><div class="bottomSignLine">${esc(l[id+'Date']||'')}</div></div>
   </div>`
 }
 function leaveDoc(){
@@ -231,7 +232,7 @@ function leaveDoc(){
       </div>
     </div>
 
-    <div class="signaturePanelRight">
+    <div class="signaturePanelBottom">
       ${signatureRows('applicant','申請人')}
       ${signatureRows('witness','見證人')}
       ${signatureRows('staff','負責人')}
