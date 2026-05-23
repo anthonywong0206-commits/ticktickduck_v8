@@ -23,3 +23,6 @@
 .search input#q{position:relative;z-index:20;background:#fff;pointer-events:auto;touch-action:manipulation;}
 .att tr.hit td{background:#fffbea;}
 .att tr.hit td.sticky{background:#fff3bf;}
+/* Mobile attendance tap stability fix */
+.tableWrap{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-behavior:auto;}
+.cellBtn{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}

@@ -1,23 +1,15 @@
-# Tick Tick Duck v8.1 Static Statistics Update
+# Tick Tick Duck v8 Static - Attendance Scroll Fix
 
-零 npm 靜態版，無需 npm install / build。
+更新內容：
+- 修復手機出席表勾選後自動彈回前面／頂部問題
+- 勾選出席狀態時不再重新渲染整個頁面
+- 保留橫向及縱向 scroll 位置
+- 加入手機觸控穩定設定
 
-## 今次更新
-- 活動統計 KPI 改為只顯示：
-  1. 活動數目
-  2. 活動出席人數
-  3. 重複參與率
-- 已刪除 KPI：戶外活動比例、活躍會員數、平均出席率。
-- 保留活動項目統計、活躍參加者排行、CSV/PDF 匯出。
+使用方法：
+1. 解壓 ZIP
+2. 將所有檔案覆蓋到 GitHub repo
+3. Commit changes
+4. Vercel / GitHub Pages 自動更新
 
-## 使用方法
-1. 解壓 ZIP。
-2. 將所有檔案覆蓋到 GitHub repo 根目錄。
-3. Commit changes。
-4. Vercel / GitHub Pages 會自動更新。
-
-## Vercel 設定
-Framework Preset: Other
-Install Command: 留空
-Build Command: 留空
-Output Directory: .
+零 npm 靜態版，毋須 npm install / build。
