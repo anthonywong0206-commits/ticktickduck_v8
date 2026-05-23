@@ -84,8 +84,94 @@ function sigBlock(id,title){let l=state.leave;return `<div class="card"><h2>${ti
 let pads={};function initPads(){['applicant','witness','staff'].forEach(id=>{let c=$('#pad_'+id);if(!c)return;let ctx=c.getContext('2d'),draw=false;function resize(){c.width=c.clientWidth*2;c.height=c.clientHeight*2;ctx.scale(2,2);ctx.lineWidth=3;ctx.lineCap='round';ctx.strokeStyle='#111'}resize();let pos=e=>{let r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return {x:t.clientX-r.left,y:t.clientY-r.top}};c.onpointerdown=e=>{draw=true;let p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)};c.onpointermove=e=>{if(!draw)return;let p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke()};c.onpointerup=()=>draw=false;pads[id]=c})}
 window.saveSig=id=>{state.leave.sigs[id]=pads[id].toDataURL('image/png');saveLeave();toast('簽名已同步至文件')};window.clearSig=id=>{let c=pads[id],ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);delete state.leave.sigs[id];save()}
 window.saveLeave=function(){let l=state.leave;l.person=$('#person')?.value||l.person;l.leaveAt=$('#leaveAt')?.value||l.leaveAt;state.settings.host=$('#host')?.value||state.settings.host;['applicant','witness','staff'].forEach(id=>{l[id+'Name']=$('#'+id+'Name')?.value||'';l[id+'Date']=$('#'+id+'Date')?.value||''});save();toast('已儲存')}
-function stats(){let recs=state.records.map(r=>r.event);let totalActs=recs.length,present=recs.reduce((s,e)=>s+Object.values(e.attendance||{}).filter(v=>v==='○').length,0);let people={};recs.forEach(e=>e.participants.forEach((p,i)=>{let key=p.member||p.name;people[key]??={name:p.name,member:p.member,count:0,present:0};people[key].count++;let any=e.sessions.some((_,si)=>e.attendance[i+'_'+si]==='○');if(any)people[key].present++}));let repeatRate=Object.values(people).length?Math.round(Object.values(people).filter(p=>p.count>1).length/Object.values(people).length*100):0;let ranked=Object.values(people).sort((a,b)=>b.count-a.count).slice(0,10);layout(`<div class="card"><h2>活動統計</h2><p class="hint">統計重點已更新為：活動數目、活動出席人數、重複參與率。</p><div class="row"><input type="date"><input type="date"><select><option>全部類別</option>${state.settings.cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><button class="btn" onclick="exportCSV()">匯出 Excel/CSV</button><button class="btn" onclick="openPreview('stats')">匯出 PDF</button></div></div><div class="kpis compact-kpis"><div class="kpi"><span>活動數目</span><b>${totalActs}</b></div><div class="kpi"><span>活動出席人數</span><b>${present}</b></div><div class="kpi"><span>重複參與率</span><b>${repeatRate}%</b></div></div><div class="card"><h2>活躍參加者 TOP 10</h2>${ranked.map((p,i)=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 0"><b>${i<3?'🏆 ':''}${i+1}. ${esc(p.name)}</b><span>${esc(p.member||'--')}｜${p.count} 次參與｜${p.present} 次出席</span></div>`).join('')}</div><div class="card"><h2>活動項目統計</h2>${recs.map(e=>{let total=e.participants.length,att=Object.values(e.attendance||{}).filter(v=>v==='○').length,rate=total?Math.round(att/total*100):0;return `<p><b>${esc(e.name)}</b>｜${esc(e.category)}｜參加 ${total}｜出席 ${att}｜出席率 ${rate}%</p><div class="bar"><span style="width:${rate}%"></span></div>`}).join('')}</div>`)}
-window.exportCSV=function(){let lines=['活動名稱,類別,參加人數,出席人數,出席率'];state.records.forEach(r=>{let e=r.event,total=e.participants.length,att=Object.values(e.attendance||{}).filter(v=>v==='○').length;lines.push([e.name,e.category,total,att,total?Math.round(att/total*100)+'%':'0%'].join(','))});let blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='活動統計.csv';a.click()}
+function getStatsFilters(){
+  try{return JSON.parse(sessionStorage.getItem('ttd_stats_filters')||'{}')}catch{return {}}
+}
+function setStatsFilters(next){
+  sessionStorage.setItem('ttd_stats_filters', JSON.stringify(next||{}));
+}
+function eventInDateRange(e,filters){
+  const dates=(e.sessions&&e.sessions.length?e.sessions:[e.date]).filter(Boolean);
+  if(!dates.length) return true;
+  const start=filters.start||'';
+  const end=filters.end||'';
+  return dates.some(d=>(!start||d>=start)&&(!end||d<=end));
+}
+function getFilteredStatEvents(){
+  const filters=getStatsFilters();
+  const base=state.records.length?state.records.map(r=>r.event):[state.event];
+  return base.filter(e=>{
+    const okCat=!filters.category||filters.category==='全部類別'||e.category===filters.category;
+    return okCat && eventInDateRange(e,filters);
+  });
+}
+function countEventAttendance(e){
+  const sessions=e.sessions||[];
+  const participants=e.participants||[];
+  const totalSlots=Math.max(1,participants.length)*Math.max(1,sessions.length||1);
+  const present=Object.values(e.attendance||{}).filter(v=>v==='○').length;
+  return {present,totalSlots};
+}
+window.updateStatsFilter=function(key,value){
+  const filters=getStatsFilters();
+  filters[key]=value||'';
+  setStatsFilters(filters);
+  render();
+}
+window.quickStatsRange=function(type){
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  let start=new Date(now), end=new Date(now);
+  if(type==='7'){start.setDate(now.getDate()-6)}
+  if(type==='30'){start.setDate(now.getDate()-29)}
+  if(type==='month'){start=new Date(now.getFullYear(),now.getMonth(),1)}
+  if(type==='lastMonth'){start=new Date(now.getFullYear(),now.getMonth()-1,1);end=new Date(now.getFullYear(),now.getMonth(),0)}
+  if(type==='year'){start=new Date(now.getFullYear(),0,1)}
+  const filters=getStatsFilters();
+  filters.start=iso(start);filters.end=iso(end);
+  setStatsFilters(filters);
+  render();
+}
+window.clearStatsFilters=function(){
+  setStatsFilters({});
+  render();
+}
+function stats(){
+  const filters=getStatsFilters();
+  const recs=getFilteredStatEvents();
+  const totalActs=recs.length;
+  const present=recs.reduce((s,e)=>s+countEventAttendance(e).present,0);
+  const people={};
+  recs.forEach(e=>(e.participants||[]).forEach((p,i)=>{
+    let key=p.member||p.name||('P'+i);
+    people[key]??={name:p.name||'',member:p.member||'',count:0,present:0};
+    people[key].count++;
+    let any=(e.sessions||['']).some((_,si)=>(e.attendance||{})[i+'_'+si]==='○');
+    if(any)people[key].present++;
+  }));
+  let allPeople=Object.values(people);
+  let repeatRate=allPeople.length?Math.round(allPeople.filter(p=>p.count>1).length/allPeople.length*100):0;
+  let ranked=allPeople.sort((a,b)=>b.count-a.count||b.present-a.present).slice(0,10);
+  let catSummary={};
+  recs.forEach(e=>{
+    const c=e.category||'未分類';
+    catSummary[c]??={cat:c,events:0,present:0,participants:0};
+    catSummary[c].events++;
+    catSummary[c].present+=countEventAttendance(e).present;
+    catSummary[c].participants+=(e.participants||[]).length;
+  });
+  layout(`<div class="card stats-filter-card"><h2>活動統計</h2><p class="hint">選擇日期或類別後會即時更新下方統計；如沒有已確認簽到紀錄，會先以目前活動作示範統計。</p><div class="grid grid2"><div class="field"><label>開始日期</label><input id="statStart" type="date" value="${esc(filters.start||'')}" onchange="updateStatsFilter('start',this.value)" oninput="updateStatsFilter('start',this.value)"></div><div class="field"><label>結束日期</label><input id="statEnd" type="date" value="${esc(filters.end||'')}" onchange="updateStatsFilter('end',this.value)" oninput="updateStatsFilter('end',this.value)"></div><div class="field"><label>活動類別</label><select id="statCategory" onchange="updateStatsFilter('category',this.value)"><option ${(!filters.category||filters.category==='全部類別')?'selected':''}>全部類別</option>${state.settings.cats.map(c=>`<option value="${esc(c)}" ${filters.category===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div><div class="field"><label>快速日期</label><div class="row"><button class="btn mini" onclick="quickStatsRange('7')">最近7日</button><button class="btn mini" onclick="quickStatsRange('30')">最近30日</button><button class="btn mini" onclick="quickStatsRange('month')">本月</button><button class="btn mini" onclick="quickStatsRange('lastMonth')">上月</button><button class="btn mini" onclick="quickStatsRange('year')">今年</button></div></div></div><div class="row" style="margin-top:10px"><button class="btn" onclick="clearStatsFilters()">清除篩選</button><button class="btn" onclick="exportCSV()">匯出 Excel/CSV</button><button class="btn" onclick="openPreview('stats')">匯出 PDF</button><span class="pill">目前顯示 ${totalActs} 個活動</span></div></div><div class="kpis compact-kpis"><div class="kpi"><span>活動數目</span><b>${totalActs}</b></div><div class="kpi"><span>活動出席人數</span><b>${present}</b></div><div class="kpi"><span>重複參與率</span><b>${repeatRate}%</b></div></div><div class="card"><h2>類別統計</h2>${Object.values(catSummary).length?Object.values(catSummary).map(c=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 0"><b>${esc(c.cat)}</b><span>${c.events} 個活動｜${c.participants} 參加人次｜${c.present} 出席人次</span></div>`).join(''):'<p class="muted">暫時沒有符合篩選的活動。</p>'}</div><div class="card"><h2>活躍參加者 TOP 10</h2>${ranked.length?ranked.map((p,i)=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 0"><b>${i<3?'🏆 ':''}${i+1}. ${esc(p.name)}</b><span>${esc(p.member||'--')}｜${p.count} 次參與｜${p.present} 次出席</span></div>`).join(''):'<p class="muted">暫時沒有參加者資料。</p>'}</div><div class="card"><h2>活動項目統計</h2>${recs.length?recs.map(e=>{let total=(e.participants||[]).length,att=countEventAttendance(e).present,rate=total?Math.round(att/Math.max(1,total)*100):0;return `<p><b>${esc(e.name)}</b>｜${esc(e.category||'未分類')}｜參加 ${total}｜出席 ${att}｜出席率 ${rate}%</p><div class="bar"><span style="width:${Math.min(rate,100)}%"></span></div>`}).join(''):'<p class="muted">沒有符合日期／類別的活動。</p>'}</div>`)
+}
+window.exportCSV=function(){
+  let lines=['活動名稱,類別,參加人數,出席人數,出席率'];
+  getFilteredStatEvents().forEach(e=>{
+    let total=(e.participants||[]).length,att=countEventAttendance(e).present;
+    lines.push([e.name||'',e.category||'',total,att,total?Math.round(att/Math.max(1,total)*100)+'%':'0%'].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  });
+  let blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='活動統計.csv';a.click()
+}
 function settings(){let s=state.settings;layout(`<div class="card"><h2>設定</h2><div class="grid grid2"><div class="field"><label>管理密碼</label><input id="pw" type="password" value="${esc(s.password)}"></div><div class="field"><label>機構名稱</label><input id="org" value="${esc(s.org)}"></div><div class="field"><label>主辦單位</label><input id="hostset" value="${esc(s.host)}"></div><div class="field"><label>會員編號欄位名稱</label><input id="memberLabel" value="${esc(s.memberLabel)}"></div></div><button class="btn primary" onclick="saveSettings()">儲存設定</button></div><div class="card"><h2>活動類別管理</h2><div id="cats">${s.cats.map((c,i)=>`<div class="row" style="margin:6px 0"><input value="${esc(c)}" data-cat="${i}" style="flex:1;min-height:46px;border:1px solid var(--line);border-radius:14px;padding:10px"><button class="btn warn mini" onclick="removeCat(${i})">刪除</button></div>`).join('')}</div><div class="row"><input id="newcat" placeholder="新增類別" style="flex:1;min-height:48px;border:1px solid var(--line);border-radius:14px;padding:10px"><button class="btn" onclick="addCat()">新增</button></div></div><div class="card"><h2>備份</h2><div class="row"><button class="btn" onclick="backup()">匯出 JSON</button><label class="btn">匯入 JSON<input type="file" accept=".json" hidden onchange="importJSON(this.files[0])"></label><button class="btn warn" onclick="clearAll()">清除全部資料</button></div></div>`)}
 window.saveSettings=function(){let s=state.settings;s.password=$('#pw').value;s.org=$('#org').value;s.host=$('#hostset').value;s.memberLabel=$('#memberLabel').value;$$('[data-cat]').forEach(i=>s.cats[+i.dataset.cat]=i.value.trim());s.cats=[...new Set(s.cats.filter(Boolean))];save();render();toast('設定已儲存')};window.addCat=()=>{let v=$('#newcat').value.trim();if(v&&!state.settings.cats.includes(v)){state.settings.cats.push(v);save();render()}};window.removeCat=i=>{let c=state.settings.cats[i];if(state.records.some(r=>r.event.category===c)||state.event.category===c){toast('已有活動使用此類別');return}state.settings.cats.splice(i,1);save();render()};window.backup=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='tick-tick-duck-backup.json';a.click()};window.importJSON=f=>{let r=new FileReader();r.onload=()=>{state=JSON.parse(r.result);save();render()};r.readAsText(f)};window.clearAll=()=>{if(prompt('輸入管理密碼')===state.settings.password&&confirm('確定清除？')){let set=state.settings;state=structuredClone(defaults);state.settings=set;save();render()}}
 function attendanceDoc(e=state.event){return `<div class="doc"><h2>${esc(state.settings.org)}</h2><h2>活動出席紀錄</h2><p>活動：${esc(e.name)}　類別：${esc(e.category)}　地點：${esc(e.place)}　時間：${esc(e.time)}</p><table><thead><tr><th>姓名</th>${e.hasMember?`<th>${esc(state.settings.memberLabel)}</th>`:''}<th>電話</th>${e.outdoor?'<th>緊急聯絡</th>':''}${e.sessions.map(d=>`<th>${fmt(d)}</th>`).join('')}</tr></thead><tbody>${e.participants.map((p,i)=>`<tr><td>${esc(p.name)}</td>${e.hasMember?`<td>${esc(p.member||'')}</td>`:''}<td>••••••</td>${e.outdoor?`<td>${esc(p.emergencyName||'')} ${esc(p.emergencyPhone||'')}</td>`:''}${e.sessions.map((_,si)=>`<td>${e.attendance[i+'_'+si]||''}</td>`).join('')}</tr>`).join('')}</tbody></table><p>生成日期：${new Date().toLocaleString()}</p></div>`}
