@@ -26,3 +26,9 @@
 /* Mobile attendance tap stability fix */
 .tableWrap{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-behavior:auto;}
 .cellBtn{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}
+
+/* v8.4 search effect fix: visible fuzzy search results without re-rendering input */
+.att tr.dim td{opacity:.45;background:#fafafa;}
+.att tr.hit td{background:#fff6d8!important;}
+.att tr.hit td.sticky{background:#ffeaa3!important;}
+#qResult{white-space:normal;}
