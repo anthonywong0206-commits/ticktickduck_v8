@@ -1,7 +1,17 @@
 const $=(s,r=document)=>r.querySelector(s);const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const LS='ttd_static_v8';
-const defaults={settings:{password:'1234',org:'香港聖公會福利協會有限公司',host:'香港聖公會 聖匠堂長者地區中心',memberLabel:'會員編號',cats:['小組活動','講座','義工活動','戶外活動','健康活動','認知訓練','社交活動','運動活動','社區宣傳','其他']},active:'home',volunteer:false,event:{name:'樂齡同行情緒支援小組',category:'小組活動',date:'2026-06-27',time:'09:30-12:30',place:'聖匠堂長者地區中心',sessions:['2026-06-27','2026-07-04','2026-07-11'],outdoor:true,hasMember:true,participants:[{name:'陳大文',phone:'91234567',member:'M001',emergencyName:'陳太',emergencyPhone:'91230000'},{name:'李小美',phone:'62345678',member:'M002',emergencyName:'李先生',emergencyPhone:'62340000'},{name:'黃浩然',phone:'66440924',member:'M0132',emergencyName:'黃太',emergencyPhone:'66440000'}],attendance:{}},records:[],leave:{person:'陳大文',leaveAt:'活動完結前自行離隊',applicantName:'陳大文',witnessName:'',staffName:'',applicantDate:new Date().toISOString().slice(0,10),witnessDate:new Date().toISOString().slice(0,10),staffDate:new Date().toISOString().slice(0,10),sigs:{}}};
-let state=load();function load(){try{return {...defaults,...JSON.parse(localStorage.getItem(LS)||'{}')}}catch{return structuredClone(defaults)}}function save(){localStorage.setItem(LS,JSON.stringify(state))}function esc(s=''){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function fmt(d){if(!d)return'';let x=new Date(d);return isNaN(x)?d:`${x.getMonth()+1}/${x.getDate()}`}function toast(t){let n=document.createElement('div');n.className='pill';n.style.cssText='position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:200;background:#172033;color:#fff';n.textContent=t;document.body.append(n);setTimeout(()=>n.remove(),1800)}
+const defaults={settings:{password:'1234',org:'香港聖公會福利協會有限公司',host:'香港聖公會 聖匠堂長者地區中心',memberLabel:'會員編號',cats:['小組活動','講座','義工活動','戶外活動','健康活動','認知訓練','社交活動','運動活動','社區宣傳','其他']},active:'home',volunteer:false,event:{name:'樂齡同行情緒支援小組',category:'小組活動',date:'2026-06-27',time:'09:30-12:30',place:'聖匠堂長者地區中心',sessions:['2026-06-27','2026-07-04','2026-07-11'],outdoor:true,hasMember:true,participants:[{name:'陳大文',phone:'91234567',member:'M001',emergencyName:'陳太',emergencyPhone:'91230000'},{name:'李小美',phone:'62345678',member:'M002',emergencyName:'李先生',emergencyPhone:'62340000'},{name:'黃浩然',phone:'66440924',member:'M0132',emergencyName:'黃太',emergencyPhone:'66440000'}],attendance:{}},records:[],leave:{person:'',leaveAt:'',applicantName:'',witnessName:'',staffName:'',applicantDate:new Date().toISOString().slice(0,10),witnessDate:new Date().toISOString().slice(0,10),staffDate:new Date().toISOString().slice(0,10),sigs:{}}};
+let state=load();
+// v8.5 migration: remove old demo applicant name from departure declaration to avoid generated documents always showing 陳大文
+if(!state.version || state.version < '8.5'){
+  state.version='8.5';
+  if(state.leave){
+    if(state.leave.person==='陳大文') state.leave.person='';
+    if(state.leave.applicantName==='陳大文') state.leave.applicantName='';
+    state.leave.leaveAt = state.leave.leaveAt==='活動完結前自行離隊' ? '' : (state.leave.leaveAt||'');
+  }
+  save();
+}function load(){try{return {...defaults,...JSON.parse(localStorage.getItem(LS)||'{}')}}catch{return structuredClone(defaults)}}function save(){localStorage.setItem(LS,JSON.stringify(state))}function esc(s=''){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function fmt(d){if(!d)return'';let x=new Date(d);return isNaN(x)?d:`${x.getMonth()+1}/${x.getDate()}`}function toast(t){let n=document.createElement('div');n.className='pill';n.style.cssText='position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:200;background:#172033;color:#fff';n.textContent=t;document.body.append(n);setTimeout(()=>n.remove(),1800)}
 function parseRows(text,hasMember=false){return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{let p=l.includes('\t')?l.split('\t'):l.includes(',')?l.split(','):l.split(/\s+/);p=p.map(x=>x.trim()).filter(Boolean);return {name:p[0]||'',phone:p[1]||'',member:hasMember?(p[2]||''):''}}).filter(x=>x.name)}
 function parseEmer(text){return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{let p=l.includes('\t')?l.split('\t'):l.includes(',')?l.split(','):l.split(/\s+/);p=p.map(x=>x.trim()).filter(Boolean);return {name:p[0]||'',emergencyName:p[1]||'',emergencyPhone:p[2]||''}})}
 function setPage(p){if(state.volunteer&&p!=='attendance'){toast('義工協助模式已鎖定頁面');return}state.active=p;save();render()}
@@ -79,7 +89,7 @@ window.toggleVolunteer=function(){if(!state.volunteer){state.volunteer=true;stat
 window.confirmRecord=function(){state.records.unshift({id:Date.now(),created:new Date().toISOString(),event:structuredClone(state.event)});save();state.active='records';render();toast('已生成簽到紀錄')}
 function records(){layout(`<div class="card"><h2>活動簽到紀錄</h2>${state.records.length?'':'<p class="muted">未有紀錄</p>'}</div>${state.records.map(r=>{let e=r.event,total=e.participants.length,att=Object.values(e.attendance||{}).filter(v=>v==='○').length;return `<div class="card"><h2>${esc(e.name)}</h2><p class="muted">${esc(e.category)}｜${esc(e.place)}｜${new Date(r.created).toLocaleString()}</p><div class="row"><span class="pill">參加 ${total}</span><span class="pill">出席 ${att}</span></div><div class="row" style="margin-top:10px"><button class="btn" onclick="openPreview('record',${r.id})">查看／匯出</button><button class="btn warn" onclick="delRecord(${r.id})">刪除</button></div></div>`}).join('')}`)}
 window.delRecord=id=>{if(confirm('確定刪除？')){state.records=state.records.filter(r=>r.id!==id);save();render()}}
-function leave(){let l=state.leave,e=state.event;layout(`<div class="card"><h2>戶外活動離隊聲明</h2><div class="grid grid2"><div class="field"><label>申請人</label><input id="person" value="${esc(l.person)}"></div><div class="field"><label>離隊時間/地點</label><input id="leaveAt" value="${esc(l.leaveAt)}"></div><div class="field"><label>主辦單位</label><input id="host" value="${esc(state.settings.host)}"></div></div></div>${['applicant','witness','staff'].map((id,i)=>sigBlock(id,['申請人','見證人','負責人'][i])).join('')}<div class="row"><button class="btn primary" onclick="saveLeave();openPreview('leave')">文件預覽／匯出</button><button class="btn" onclick="saveLeave()">儲存</button></div>`);initPads()}
+function leave(){let l=state.leave,e=state.event;let options=(e.participants||[]).map(p=>`<option value="${esc(p.name)}" ${l.person===p.name?'selected':''}>${esc(p.name)}</option>`).join('');layout(`<div class="card"><h2>戶外活動離隊聲明</h2><p class="muted">請先選擇或輸入申請人姓名，預覽文件會即時使用此姓名，不會再自動套用示範姓名。</p><div class="grid grid2"><div class="field"><label>從參加者選擇</label><select id="personSelect" onchange="document.getElementById('person').value=this.value"><option value="">請選擇參加者</option>${options}</select></div><div class="field"><label>申請人姓名</label><input id="person" placeholder="請輸入申請人姓名" value="${esc(l.person||'')}"></div><div class="field"><label>離隊時間／地點</label><input id="leaveAt" placeholder="例如：下午3時於中心門口" value="${esc(l.leaveAt||'')}"></div><div class="field"><label>主辦單位</label><input id="host" value="${esc(state.settings.host)}"></div></div></div>${['applicant','witness','staff'].map((id,i)=>sigBlock(id,['申請人','見證人','負責人'][i])).join('')}<div class="row"><button class="btn primary" onclick="saveLeave();openPreview('leave')">文件預覽／匯出</button><button class="btn" onclick="saveLeave()">儲存</button></div>`);initPads()}
 function sigBlock(id,title){let l=state.leave;return `<div class="card"><h2>${title}簽署</h2><canvas class="sigPad" id="pad_${id}"></canvas><div class="grid grid2"><div class="field"><label>${title}姓名</label><input id="${id}Name" value="${esc(l[id+'Name']||'')}"></div><div class="field"><label>日期</label><input id="${id}Date" type="date" value="${esc(l[id+'Date']||new Date().toISOString().slice(0,10))}"></div></div><div class="row"><button class="btn" onclick="saveSig('${id}')">儲存簽名</button><button class="btn warn" onclick="clearSig('${id}')">清除簽名</button></div></div>`}
 let pads={};function initPads(){['applicant','witness','staff'].forEach(id=>{let c=$('#pad_'+id);if(!c)return;let ctx=c.getContext('2d'),draw=false;function resize(){c.width=c.clientWidth*2;c.height=c.clientHeight*2;ctx.scale(2,2);ctx.lineWidth=3;ctx.lineCap='round';ctx.strokeStyle='#111'}resize();let pos=e=>{let r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return {x:t.clientX-r.left,y:t.clientY-r.top}};c.onpointerdown=e=>{draw=true;let p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)};c.onpointermove=e=>{if(!draw)return;let p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke()};c.onpointerup=()=>draw=false;pads[id]=c})}
 window.saveSig=id=>{state.leave.sigs[id]=pads[id].toDataURL('image/png');saveLeave();toast('簽名已同步至文件')};window.clearSig=id=>{let c=pads[id],ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);delete state.leave.sigs[id];save()}
@@ -180,8 +190,13 @@ function splitDateParts(value){
   if(/^\d{4}-\d{2}-\d{2}$/.test(d)){let [y,m,day]=d.split('-');return {y,m:String(Number(m)),d:String(Number(day))}}
   return {y:'____',m:'____',d:'____'}
 }
-function lineFill(text, cls=''){
-  return `<span class="docLine ${cls}">${esc(text||'')}</span>`
+function genText(text, fallback=''){
+  const v=String(text||'').trim();
+  return `<span class="genRed">${esc(v||fallback)}</span>`
+}
+function genLine(text, cls='', fallback=''){
+  const v=String(text||'').trim();
+  return `<span class="redLine ${cls}">${esc(v||fallback)}</span>`
 }
 function signatureRows(id,title){
   let l=state.leave;
@@ -194,20 +209,26 @@ function signatureRows(id,title){
 }
 function leaveDoc(){
   let l=state.leave,e=state.event,s=state.settings;
+  let applicant=(l.person||l.applicantName||'').trim();
   let parts=splitDateParts(e.date);
   let host=s.host||'香港聖公會 聖匠堂長者地區中心';
-  return `<div class="doc portrait leaveOfficial">
+  let leaveTime=(l.leaveAt||'活動完結前自行離隊').trim();
+  return `<div class="doc portrait leaveOfficial onePageLeave">
     <div class="leaveHeader">
       <div class="orgTitle">${esc(s.org||'香港聖公會福利協會有限公司')}</div>
       <div class="leaveTitle">戶外活動離隊聲明</div>
     </div>
 
-    <div class="leaveBody">
-      <p class="formLine">本人${lineFill(l.person,'nameLine')}參加由${lineFill(host,'hostLine')}於${lineFill(parts.y,'yearLine')}年</p>
-      <p class="formLine">${lineFill(parts.m,'monthLine')}月${lineFill(parts.d,'dayLine')}日主辦之</p>
-      <p class="formLine">${lineFill(e.name,'activityLine')}活動，並自願要求於</p>
-      <p class="formLine">${lineFill(l.leaveAt,'leaveLine')}離隊，本人亦明白離隊後之個人安全將由本人負責，概與</p>
-      <p class="formLine noUnderline">中心無關。</p>
+    <div class="leaveBody newLeaveBody">
+      <p class="paraLine">本人${genLine(applicant,'applicantRed','申請人姓名')}參加由（${genLine(host,'hostRed','機構名稱')}）的以下活動並自願要求</p>
+      <p class="paraLine">於活動完結前自行離隊，本人亦明白離隊後之個人安全將由本人負責，概</p>
+      <p class="paraLine">與中心無關。</p>
+
+      <div class="fieldBlock">
+        <div class="fieldLine"><span class="fieldLabel">舉行日期:</span><span class="dateParts">${genText(parts.y,'年份')} 年　${genText(parts.m,'月份')} 月　${genText(parts.d,'日期')} 日</span></div>
+        <div class="fieldLine"><span class="fieldLabel">離隊時間:</span>${genLine(leaveTime,'timeRed','離隊時間')}</div>
+        <div class="fieldLine"><span class="fieldLabel">活動名稱:</span>${genLine(e.name,'activityRed','活動名稱')}</div>
+      </div>
     </div>
 
     <div class="signaturePanelRight">
