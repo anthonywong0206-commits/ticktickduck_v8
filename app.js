@@ -14,22 +14,26 @@ window.applyEmergency=function(){let rows=parseEmer($('#elist').value),miss=[];r
 function matchScore(p,q){if(!q)return 0;let hay=[p.name,p.phone,p.member,p.emergencyName,p.emergencyPhone].join(' ').toLowerCase();q=q.toLowerCase();if(hay.includes(q))return 2;return [...q].every(ch=>hay.includes(ch))?1:0}
 
 let searchTimer=null;
-window.updateAttendanceSearch=function(value){
+window.ttdSearchComposing=false;
+window.updateAttendanceSearch=function(value, force=false, ev=null){
   sessionStorage.setItem('ttd_q', value || '');
+  if(!force && (window.ttdSearchComposing || ev?.isComposing)){
+    return;
+  }
   clearTimeout(searchTimer);
   searchTimer=setTimeout(()=>{
     render();
     requestAnimationFrame(()=>{
       const q=document.getElementById('q');
       if(q){
-        q.focus();
+        q.focus({preventScroll:true});
         const len=q.value.length;
         try{q.setSelectionRange(len,len)}catch(e){}
       }
     });
-  },220);
+  }, force ? 20 : 260);
 }
-function attendance(){let e=state.event,q=sessionStorage.getItem('ttd_q')||'';let list=e.participants.map((p,i)=>({...p,_i:i,_s:matchScore(p,q)})).sort((a,b)=>q?(b._s-a._s):a._i-b._i);layout(`<div class="search"><div class="card"><div class="row"><span class="pill">${esc(e.name)}</span><span class="pill">${esc(e.category)}</span><span class="pill">${esc(e.place)}</span></div><div class="row" style="margin-top:10px"><input id="q" placeholder="快速搜尋姓名／電話／${esc(state.settings.memberLabel)}" value="${esc(q)}" oninput="updateAttendanceSearch(this.value)" style="flex:1;min-height:52px;border:1px solid var(--line);border-radius:16px;padding:12px"><button class="btn mini" onclick="sessionStorage.setItem('ttd_q','');render()">清除</button></div><div class="row" style="margin-top:10px"><button class="btn ${state.volunteer?'warn':'green'}" onclick="toggleVolunteer()">${state.volunteer?'解除義工協助模式':'啟動義工協助模式'}</button>${state.volunteer?'':`<button class="btn primary private" onclick="confirmRecord()">確認並生成簽到紀錄</button><button class="btn private" onclick="openPreview('attendance')">預覽/匯出</button>`}</div></div></div><div class="tableWrap"><table class="att"><thead><tr><th class="sticky">參加者</th>${e.hasMember?`<th>${esc(state.settings.memberLabel)}</th>`:''}<th class="private">電話</th>${e.outdoor?'<th>緊急聯絡</th>':''}${e.sessions.map(d=>`<th>${fmt(d)}</th>`).join('')}</tr></thead><tbody>${list.map((p,idx)=>`<tr class="${p._s?'hit':''}"><td class="sticky"><b>${esc(p.name)}</b></td>${e.hasMember?`<td>${esc(p.member||'')}</td>`:''}<td class="private phone"><button class="btn mini" onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">👁</button><span hidden>${esc(p.phone||'')}</span><span>••••••</span></td>${e.outdoor?`<td>${esc(p.emergencyName||'')}<br><span class="phone">${esc(p.emergencyPhone||'')}</span></td>`:''}${e.sessions.map((d,si)=>{let k=p._i+'_'+si,v=e.attendance[k]||'';return `<td><button class="cellBtn ${v==='○'?'present':v==='X'?'absent':''}" onclick="cycle('${k}')">${v}</button></td>`}).join('')}</tr>`).join('')}</tbody></table></div>`)}
+function attendance(){let e=state.event,q=sessionStorage.getItem('ttd_q')||'';let list=e.participants.map((p,i)=>({...p,_i:i,_s:matchScore(p,q)})).sort((a,b)=>q?(b._s-a._s):a._i-b._i);layout(`<div class="search"><div class="card"><div class="row"><span class="pill">${esc(e.name)}</span><span class="pill">${esc(e.category)}</span><span class="pill">${esc(e.place)}</span></div><div class="row" style="margin-top:10px"><input id="q" placeholder="快速搜尋姓名／電話／${esc(state.settings.memberLabel)}" value="${esc(q)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="search" oncompositionstart="window.ttdSearchComposing=true" oncompositionend="window.ttdSearchComposing=false; updateAttendanceSearch(this.value,true,event)" oninput="updateAttendanceSearch(this.value,false,event)" style="flex:1;min-height:52px;border:1px solid var(--line);border-radius:16px;padding:12px;font-size:16px;ime-mode:active;"><button class="btn mini" onclick="sessionStorage.setItem('ttd_q','');render()">清除</button></div><div class="row" style="margin-top:10px"><button class="btn ${state.volunteer?'warn':'green'}" onclick="toggleVolunteer()">${state.volunteer?'解除義工協助模式':'啟動義工協助模式'}</button>${state.volunteer?'':`<button class="btn primary private" onclick="confirmRecord()">確認並生成簽到紀錄</button><button class="btn private" onclick="openPreview('attendance')">預覽/匯出</button>`}</div></div></div><div class="tableWrap"><table class="att"><thead><tr><th class="sticky">參加者</th>${e.hasMember?`<th>${esc(state.settings.memberLabel)}</th>`:''}<th class="private">電話</th>${e.outdoor?'<th>緊急聯絡</th>':''}${e.sessions.map(d=>`<th>${fmt(d)}</th>`).join('')}</tr></thead><tbody>${list.map((p,idx)=>`<tr class="${p._s?'hit':''}"><td class="sticky"><b>${esc(p.name)}</b></td>${e.hasMember?`<td>${esc(p.member||'')}</td>`:''}<td class="private phone"><button class="btn mini" onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">👁</button><span hidden>${esc(p.phone||'')}</span><span>••••••</span></td>${e.outdoor?`<td>${esc(p.emergencyName||'')}<br><span class="phone">${esc(p.emergencyPhone||'')}</span></td>`:''}${e.sessions.map((d,si)=>{let k=p._i+'_'+si,v=e.attendance[k]||'';return `<td><button class="cellBtn ${v==='○'?'present':v==='X'?'absent':''}" onclick="cycle('${k}')">${v}</button></td>`}).join('')}</tr>`).join('')}</tbody></table></div>`)}
 window.cycle=function(k){let a=state.event.attendance;a[k]=a[k]==='○'?'X':a[k]==='X'?'':'○';save();render()}
 window.toggleVolunteer=function(){if(!state.volunteer){state.volunteer=true;state.active='attendance';save();render();return}let p=prompt('請輸入管理密碼');if(p===state.settings.password){state.volunteer=false;save();render();toast('已解除')}else toast('密碼錯誤')}
 window.confirmRecord=function(){state.records.unshift({id:Date.now(),created:new Date().toISOString(),event:structuredClone(state.event)});save();state.active='records';render();toast('已生成簽到紀錄')}
