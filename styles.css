@@ -19,3 +19,7 @@
 /* v8.1 statistics update: keep KPI dashboard focused on 3 requested metrics */
 .compact-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}
 @media(max-width:760px){.compact-kpis{grid-template-columns:1fr;}}
+/* v8.1 search fix: keep input tappable and visible */
+.search input#q{position:relative;z-index:20;background:#fff;pointer-events:auto;touch-action:manipulation;}
+.att tr.hit td{background:#fffbea;}
+.att tr.hit td.sticky{background:#fff3bf;}
