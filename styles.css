@@ -97,3 +97,10 @@
 .bottomSignImage img{max-width:100%;max-height:28px;object-fit:contain;display:block;}
 .onePageLeave .leaveFooter{bottom:30px!important;left:54px!important;right:54px!important;font-size:14px!important;}
 @media print{.onePageLeave{height:1123px!important;max-height:1123px!important;overflow:hidden!important}.signaturePanelBottom{bottom:126px!important}}
+
+/* v8.6 即場增加參加者 */
+.addParticipantBtn{background:#0ea5e9;color:white;border-color:#0ea5e9;font-weight:800}
+.addParticipantOverlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:260;display:flex;align-items:flex-end;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+.addParticipantPanel{width:min(760px,100%);max-height:92vh;overflow:auto;background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);border-radius:24px;padding:18px;box-shadow:0 24px 70px rgba(15,23,42,.25)}
+.addParticipantHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.addParticipantHead h2{margin:0;font-size:22px}.addParticipantActions{margin-top:14px}.addParticipantPanel input{font-size:16px;min-height:50px}
+@media(min-width:768px){.addParticipantOverlay{align-items:center}.addParticipantPanel{padding:24px}}
