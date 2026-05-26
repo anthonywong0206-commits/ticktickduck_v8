@@ -116,3 +116,30 @@
 .cellBtn{width:46px;height:46px;border-radius:14px;}
 @media(min-width:900px){.att .sticky{min-width:104px!important;max-width:128px!important;width:112px!important}.att td.private.phone,.att th.phoneCol{min-width:82px!important;max-width:92px!important;width:86px!important}.att th,.att td{font-size:15px}}
 @media(max-width:520px){.att{min-width:620px}.att th,.att td{padding:5px 4px;min-width:46px;font-size:14px}.att .sticky{min-width:84px!important;max-width:98px!important;width:88px!important;font-size:14px}.att td.private.phone,.att th.phoneCol{min-width:62px!important;max-width:70px!important;width:66px!important;font-size:12px}.att td.private.phone .btn{min-height:28px;padding:0 6px}.cellBtn{width:44px;height:44px;font-size:23px}.tableWrap{max-height:68dvh}}
+
+/* v8.10 attendance page layout refinement: search top, actions bottom, stable table, safe bottom nav */
+html,body{min-height:100%;overflow-x:hidden;}
+.app{padding-bottom:calc(var(--navH) + env(safe-area-inset-bottom) + 34px)!important;}
+.attendancePage{display:flex;flex-direction:column;gap:12px;min-height:calc(100dvh - var(--navH) - 80px);}
+.attendancePage .search{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(247,251,255,.98),rgba(245,247,251,.96));padding:0 0 8px;}
+.searchCard{margin-bottom:0!important;}
+.searchRow{align-items:stretch;}
+.searchRow input#q{min-width:180px;}
+.attendanceTableSection{flex:1;min-height:0;}
+.stableTable{max-height:calc(100dvh - var(--navH) - 250px)!important;min-height:320px;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-behavior:auto;touch-action:pan-x pan-y;border-radius:18px;}
+.attendanceActions{margin-top:4px;margin-bottom:0!important;position:relative;z-index:12;}
+.actionRow{display:grid;grid-template-columns:1fr;gap:10px;align-items:stretch;}
+.actionRow .btn{width:100%;min-height:52px;}
+.nav{bottom:calc(8px + env(safe-area-inset-bottom))!important;z-index:60!important;}
+.att{table-layout:fixed;min-width:max-content;}
+.att th,.att td{vertical-align:middle;}
+.att .nameCol,.att th.nameCol,.att td.nameCol{min-width:122px!important;width:122px!important;max-width:150px!important;white-space:normal!important;word-break:break-word;overflow-wrap:anywhere;line-height:1.25;text-align:left!important;}
+.att .phoneCol,.att th.phoneCol,.att td.phoneCol{min-width:104px!important;width:104px!important;max-width:122px!important;white-space:normal!important;word-break:break-word;overflow-wrap:anywhere;line-height:1.2;}
+.att .memberCol{min-width:92px!important;width:92px!important;max-width:112px!important;white-space:normal!important;word-break:break-word;overflow-wrap:anywhere;}
+.att .emergencyCol{min-width:118px!important;width:118px!important;max-width:140px!important;white-space:normal!important;word-break:break-word;overflow-wrap:anywhere;line-height:1.25;}
+.att .dateCol{min-width:58px!important;width:58px!important;max-width:62px!important;}
+.att td.private.phone .btn{display:inline-flex;align-items:center;justify-content:center;margin-bottom:3px;}
+.att td.private.phone span{display:inline-block;max-width:100%;white-space:normal!important;overflow:visible;text-overflow:clip;letter-spacing:-.2px;}
+.cellBtn{width:46px!important;height:46px!important;touch-action:manipulation;}
+@media(min-width:760px){.actionRow{grid-template-columns:repeat(4,minmax(0,1fr));}.stableTable{max-height:calc(100dvh - var(--navH) - 230px)!important;}.att .nameCol,.att th.nameCol,.att td.nameCol{min-width:138px!important;width:138px!important;max-width:170px!important}.att .phoneCol,.att th.phoneCol,.att td.phoneCol{min-width:118px!important;width:118px!important;max-width:138px!important}.att .dateCol{min-width:64px!important;width:64px!important}.cellBtn{width:48px!important;height:48px!important}}
+@media(max-width:520px){.app{padding-left:10px!important;padding-right:10px!important;padding-bottom:calc(var(--navH) + env(safe-area-inset-bottom) + 38px)!important}.attendancePage{gap:10px}.attendancePage .card{padding:12px}.stableTable{max-height:calc(100dvh - var(--navH) - 285px)!important;min-height:280px}.att{min-width:auto!important}.att .nameCol,.att th.nameCol,.att td.nameCol{min-width:112px!important;width:112px!important;max-width:132px!important;font-size:14px!important}.att .phoneCol,.att th.phoneCol,.att td.phoneCol{min-width:96px!important;width:96px!important;max-width:112px!important;font-size:12px!important}.att .memberCol{min-width:82px!important;width:82px!important}.att .emergencyCol{min-width:108px!important;width:108px!important;font-size:12px!important}.att .dateCol{min-width:54px!important;width:54px!important}.cellBtn{width:44px!important;height:44px!important}.searchRow .pill{width:100%;justify-content:center}.searchRow .btn{min-width:72px}.nav{left:8px!important;right:8px!important;height:78px!important;border-radius:22px!important}.nav button{min-width:0!important}}
