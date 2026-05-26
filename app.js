@@ -80,6 +80,24 @@ function attendance(){
   layout(`<div class="attendancePage"><div class="search"><div class="card searchCard"><div class="row"><span class="pill">${esc(e.name)}</span><span class="pill">${esc(e.category)}</span><span class="pill">${esc(e.place)}</span></div><div class="row searchRow" style="margin-top:10px"><input id="q" placeholder="快速搜尋姓名／電話／${esc(state.settings.memberLabel)}／緊急聯絡人" value="${esc(q)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="search" oncompositionstart="window.ttdSearchComposing=true" oncompositionend="window.ttdSearchComposing=false; updateAttendanceSearch(this.value,true,event)" oninput="updateAttendanceSearch(this.value,false,event)" style="flex:1;min-height:52px;border:1px solid var(--line);border-radius:16px;padding:12px;font-size:16px;ime-mode:active;"><button class="btn mini" onclick="clearAttendanceSearch()">清除</button><span id="qResult" class="pill">共 ${e.participants.length} 位參加者</span></div></div></div><div class="attendanceTableSection"><div class="tableWrap stableTable"><table class="att"><thead><tr><th class="sticky nameCol">姓名</th>${e.hasMember?`<th class="memberCol">${esc(state.settings.memberLabel)}</th>`:''}<th class="private phoneCol">電話</th>${e.outdoor?'<th class="emergencyCol">緊急聯絡</th>':''}${e.sessions.map(d=>`<th class="dateCol">${fmt(d)}</th>`).join('')}</tr></thead><tbody>${list.map((p,idx)=>{let searchText=[p.name,p.phone,p.member,p.emergencyName,p.emergencyPhone].filter(Boolean).join(' ');return `<tr data-index="${idx}" data-search="${esc(searchText)}"><td class="sticky nameCol"><b>${esc(p.name)}</b></td>${e.hasMember?`<td class="memberCol">${esc(p.member||'')}</td>`:''}<td class="private phone phoneCol"><button class="btn mini" onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">👁</button><span hidden>${esc(p.phone||'')}</span><span>••••••</span></td>${e.outdoor?`<td class="emergencyCol">${esc(p.emergencyName||'')}<br><span class="phone">${esc(p.emergencyPhone||'')}</span></td>`:''}${e.sessions.map((d,si)=>{let k=p._i+'_'+si,v=e.attendance[k]||'';return `<td class="dateCol"><button class="cellBtn ${v==='○'?'present':v==='X'?'absent':''}" onclick="cycle('${k}',this,event)">${v}</button></td>`}).join('')}</tr>`}).join('')}</tbody></table></div></div>${actions}</div>`);
   requestAnimationFrame(()=>{applyAttendanceSearchNow(q);if(sessionStorage.getItem('ttd_scroll_last')==='1'){const w=document.querySelector('.tableWrap');if(w){w.scrollTop=w.scrollHeight;w.scrollLeft=0;}sessionStorage.removeItem('ttd_scroll_last');}})
 }
+
+window.cycle=function(k,btn,ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  const wrap=btn?btn.closest('.tableWrap'):null;
+  const sx=wrap?wrap.scrollLeft:0, sy=wrap?wrap.scrollTop:0;
+  if(!state.event.attendance) state.event.attendance={};
+  let a=state.event.attendance;
+  a[k]=a[k]==='○'?'X':a[k]==='X'?'':'○';
+  save();
+  if(btn){
+    btn.textContent=a[k]||'';
+    btn.classList.remove('present','absent');
+    if(a[k]==='○') btn.classList.add('present');
+    if(a[k]==='X') btn.classList.add('absent');
+    if(wrap){requestAnimationFrame(()=>{wrap.scrollLeft=sx;wrap.scrollTop=sy;});}
+  }
+}
+
 window.openAddParticipantModal=function(){
   const e=state.event;
   const existing=document.querySelector('.addParticipantOverlay');
