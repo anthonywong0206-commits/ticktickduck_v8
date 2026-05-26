@@ -104,3 +104,15 @@
 .addParticipantPanel{width:min(760px,100%);max-height:92vh;overflow:auto;background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);border-radius:24px;padding:18px;box-shadow:0 24px 70px rgba(15,23,42,.25)}
 .addParticipantHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.addParticipantHead h2{margin:0;font-size:22px}.addParticipantActions{margin-top:14px}.addParticipantPanel input{font-size:16px;min-height:50px}
 @media(min-width:768px){.addParticipantOverlay{align-items:center}.addParticipantPanel{padding:24px}}
+
+
+/* Compact attendance table columns: reduce name and phone widths for mobile/desktop viewing */
+.att th,.att td{padding:6px 5px;min-width:50px;font-size:15px;}
+.att .sticky{min-width:96px!important;max-width:116px!important;width:104px!important;line-height:1.25;word-break:break-word;overflow-wrap:anywhere;padding-left:8px!important;padding-right:6px!important;}
+.att td.private.phone,.att th.phoneCol{min-width:74px!important;max-width:82px!important;width:78px!important;padding:4px!important;font-size:13px;white-space:nowrap;}
+.att td.private.phone .btn{min-height:32px;border-radius:10px;padding:0 8px;font-size:12px;}
+.att td.private.phone span{font-size:12px;letter-spacing:-.5px;}
+.att td:nth-child(2),.att th:nth-child(2){max-width:90px;}
+.cellBtn{width:46px;height:46px;border-radius:14px;}
+@media(min-width:900px){.att .sticky{min-width:104px!important;max-width:128px!important;width:112px!important}.att td.private.phone,.att th.phoneCol{min-width:82px!important;max-width:92px!important;width:86px!important}.att th,.att td{font-size:15px}}
+@media(max-width:520px){.att{min-width:620px}.att th,.att td{padding:5px 4px;min-width:46px;font-size:14px}.att .sticky{min-width:84px!important;max-width:98px!important;width:88px!important;font-size:14px}.att td.private.phone,.att th.phoneCol{min-width:62px!important;max-width:70px!important;width:66px!important;font-size:12px}.att td.private.phone .btn{min-height:28px;padding:0 6px}.cellBtn{width:44px;height:44px;font-size:23px}.tableWrap{max-height:68dvh}}
