@@ -143,3 +143,23 @@ html,body{min-height:100%;overflow-x:hidden;}
 .cellBtn{width:46px!important;height:46px!important;touch-action:manipulation;}
 @media(min-width:760px){.actionRow{grid-template-columns:repeat(4,minmax(0,1fr));}.stableTable{max-height:calc(100dvh - var(--navH) - 230px)!important;}.att .nameCol,.att th.nameCol,.att td.nameCol{min-width:138px!important;width:138px!important;max-width:170px!important}.att .phoneCol,.att th.phoneCol,.att td.phoneCol{min-width:118px!important;width:118px!important;max-width:138px!important}.att .dateCol{min-width:64px!important;width:64px!important}.cellBtn{width:48px!important;height:48px!important}}
 @media(max-width:520px){.app{padding-left:10px!important;padding-right:10px!important;padding-bottom:calc(var(--navH) + env(safe-area-inset-bottom) + 38px)!important}.attendancePage{gap:10px}.attendancePage .card{padding:12px}.stableTable{max-height:calc(100dvh - var(--navH) - 285px)!important;min-height:280px}.att{min-width:auto!important}.att .nameCol,.att th.nameCol,.att td.nameCol{min-width:112px!important;width:112px!important;max-width:132px!important;font-size:14px!important}.att .phoneCol,.att th.phoneCol,.att td.phoneCol{min-width:96px!important;width:96px!important;max-width:112px!important;font-size:12px!important}.att .memberCol{min-width:82px!important;width:82px!important}.att .emergencyCol{min-width:108px!important;width:108px!important;font-size:12px!important}.att .dateCol{min-width:54px!important;width:54px!important}.cellBtn{width:44px!important;height:44px!important}.searchRow .pill{width:100%;justify-content:center}.searchRow .btn{min-width:72px}.nav{left:8px!important;right:8px!important;height:78px!important;border-radius:22px!important}.nav button{min-width:0!important}}
+
+/* v9 multi-activity home */
+.eventListHead,.editorHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 14px;max-width:900px}
+.eventListHead h2,.editorHead h2{margin:0}
+.addEventBtn,.backBtn{width:48px;height:48px;display:grid;place-items:center;background:#fff;color:var(--blue);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(21,35,66,.08)}
+.addEventBtn svg,.backBtn svg{width:24px;height:24px}.backBtn{font-size:36px;line-height:1;color:var(--ink)}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.eventList{display:grid;gap:12px}
+.eventCard{display:grid;grid-template-columns:minmax(0,1fr) 190px;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 8px 24px rgba(21,35,66,.07)}
+.eventCard.selectedEvent{border-color:#b9d0ff}
+.eventInfo{padding:18px 20px}.eventTitle{display:flex;align-items:center;gap:12px;margin-bottom:14px}.eventTitle h3{margin:0;font-size:20px;line-height:1.3}
+.eventBadge{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff}.eventBadge svg{width:19px;height:19px}
+.eventMeta{display:grid;gap:9px;color:#344054}.eventMeta span{display:flex;align-items:center;gap:8px;min-width:0}.eventMeta b{font-weight:700;color:var(--muted);min-width:34px}
+.eventActions{border-left:1px solid var(--line);padding:16px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.iconTextBtn{min-height:44px;background:#fff;color:var(--blue);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;border-radius:8px}
+.checkinBtn{border-radius:8px!important;display:flex;align-items:center;justify-content:center;gap:9px;width:100%}
+.emptyEvents{padding:48px 18px;text-align:center;background:#fff;border:1px dashed var(--line);border-radius:8px}.emptyEvents h3{margin:0 0 8px}
+.saveEventBtn{width:100%;border-radius:8px!important}.editorHead{justify-content:flex-start}.editorHead .backBtn{margin-right:2px}
+@media(min-width:760px){.eventList{max-width:900px}.eventMeta{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.hero .sub{display:none}.hero{margin-bottom:18px}.duck{width:46px;height:46px;border-radius:14px;font-size:26px}.eventCard{grid-template-columns:1fr}.eventInfo{padding:15px}.eventTitle h3{font-size:18px}.eventActions{border-left:0;border-top:1px solid var(--line);padding:10px;display:grid;grid-template-columns:1fr 1.4fr}.eventMeta span{align-items:flex-start}.eventMeta b{min-width:32px}.iconTextBtn,.checkinBtn{min-height:48px}.addEventBtn,.backBtn{width:44px;height:44px}}
